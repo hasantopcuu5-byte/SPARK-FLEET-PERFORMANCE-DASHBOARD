@@ -1,0 +1,13 @@
+📂 Proje Klasörü/
+├── 📄 index.html      (Sadece iskelet)
+├── 📂 css/
+│   └── 📄 main.css    (Sadece makyaj ve boya)
+├── 📂 js/
+│   ├── 📄 config.js   (Ayarlar ve sabit listeler)
+│   ├── 📄 api.js      (Dış dünya ve hafıza bağlantıları)
+│   ├── 📄 ui.js       (Menüler, tıklamalar, animasyonlar)
+│   ├── 📄 charts.js   (Grafik ve göstergeler)
+│   └── 📄 main.js     (Ana beyin, orkestra şefi)
+└── 📂 assets/
+    ├── 📂 images/     (Büyük görseller ve logolar)
+    └── 📂 icons/      (Küçük buton ve UI ikonları)
