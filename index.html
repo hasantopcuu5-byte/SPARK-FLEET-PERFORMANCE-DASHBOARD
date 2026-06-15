@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Filo Performans Dashboard</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e1f22">
+<link rel="apple-touch-icon" href="assets/icons/icon-192-v2.png">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- PSC DÜZENLE MODAL -->
+<div id="pscEditOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,12,18,0.92);backdrop-filter:blur(16px);align-items:center;justify-content:center;">
+  <div style="background:rgba(10,22,26,0.99);border:1px solid rgba(0,216,200,0.22);border-radius:20px;width:92%;max-width:620px;max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 80px rgba(0,0,0,0.6);">
+    <!-- Başlık -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid rgba(0,216,200,0.1);">
+      <div>
+        <div style="font-family:'Outfit',sans-serif;font-size:1rem;font-weight:900;color:var(--text);">✏️ PSC Kaydını Düzenle</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--muted);margin-top:2px;" id="editPscSubtitle"></div>
+      </div>
+      <button onclick="closePscEditModal()" style="width:32px;height:32px;border-radius:8px;background:rgba(255,90,114,0.08);border:1px solid rgba(255,90,114,0.25);color:var(--bad);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <!-- Gövde -->
+    <div style="flex:1;overflow-y:auto;padding:1.2rem 1.4rem;">
+      <div class="perf-grid3" style="margin-bottom:0.7rem;">
+        <div>
+          <label class="perf-label">Gemi</label>
+          <select class="perf-select" id="ePscVessel">
+            <option value="">-- Gemi seçin --</option>
+            <option>APRIL</option><option>ARES</option><option>BEAM</option>
+            <option>CANAL</option><option>COMET</option><option>DALI</option>
+            <option>DODO</option><option>DREAM</option>
+            <option>EMINE</option><option>FAUN</option>
+            <option>FLAT</option><option>GIFT</option><option>IDON</option>
+            <option>JUST</option><option>KRONOS</option><option>LAKER</option><option>ZEYNEP</option>
+          </select>
+        </div>
+        <div>
+          <label class="perf-label">İnspeksiyon Tarihi</label>
+          <input class="perf-input" id="ePscDate" type="date">
+        </div>
+        <div>
+          <label class="perf-label">Liman</label>
+          <input class="perf-input" id="ePscPort" placeholder="Rotterdam...">
+        </div>
+      </div>
+      <div style="margin-bottom:0.7rem;">
+        <label class="perf-label">Ülke</label>
+        <select class="perf-select" id="ePscCountry">
+          <option value="">-- Ülke seçin --</option>
+          <optgroup label="Tier 1 — Katsayı 1.50">
+            <option>Australia</option><option>United States</option><option>United Kingdom</option>
+            <option>Netherlands</option><option>France</option><option>Germany</option>
+            <option>Norway</option><option>Sweden</option><option>Denmark</option>
+            <option>Finland</option><option>Japan</option><option>Canada</option><option>New Zealand</option>
+          </optgroup>
+          <optgroup label="Tier 2 — Katsayı 1.35">
+            <option>Belgium</option><option>Spain</option><option>Italy</option>
+            <option>Portugal</option><option>Greece</option><option>Ireland</option>
+            <option>Iceland</option><option>Poland</option><option>Estonia</option>
+            <option>Latvia</option><option>Lithuania</option><option>Slovenia</option>
+            <option>Croatia</option><option>Malta</option><option>Cyprus</option>
+            <option>South Korea</option><option>Singapore</option><option>Hong Kong</option>
+            <option>China</option><option>Chile</option><option>South Africa</option>
+          </optgroup>
+          <optgroup label="Tier 3 — Katsayı 1.00">
+            <option>Indonesia</option><option>Malaysia</option><option>Philippines</option>
+            <option>Thailand</option><option>Vietnam</option><option>Russia</option>
+            <option>Panama</option><option>Mexico</option><option>Peru</option>
+            <option>Argentina</option><option>Brazil</option><option>Colombia</option>
+            <option>Uruguay</option><option>Ecuador</option><option>India</option>
+            <option>Sri Lanka</option><option>Bangladesh</option><option>Pakistan</option>
+            <option>Oman</option><option>Iran</option><option>Mozambique</option>
+            <option>Tanzania</option><option>Kenya</option><option>Madagascar</option>
+            <option>Mauritius</option><option>Maldives</option><option>Seychelles</option>
+            <option>Turkey</option><option>Bulgaria</option><option>Romania</option>
+            <option>Georgia</option><option>Ukraine</option><option>Azerbaijan</option>
+            <option>Morocco</option><option>Algeria</option><option>Tunisia</option>
+            <option>Libya</option><option>Egypt</option><option>Israel</option>
+            <option>Lebanon</option><option>Syria</option><option>Albania</option>
+            <option>Saudi Arabia</option><option>UAE</option><option>Qatar</option>
+            <option>Kuwait</option><option>Bahrain</option><option>Iraq</option>
+            <option>Jordan</option><option>Yemen</option>
+          </optgroup>
+          <optgroup label="Tier 4 — Katsayı 0.70">
+            <option>Jamaica</option><option>Trinidad and Tobago</option><option>Barbados</option>
+            <option>Cuba</option><option>Dominican Republic</option><option>Haiti</option>
+            <option>Belize</option><option>Suriname</option><option>Ghana</option>
+            <option>Nigeria</option><option>Cameroon</option><option>Senegal</option>
+            <option>Ivory Coast</option><option>Togo</option><option>Benin</option>
+            <option>Congo</option><option>Angola</option><option>Gabon</option>
+            <option>Equatorial Guinea</option>
+          </optgroup>
+          <optgroup label="Tier 5 — Katsayı 0.40">
+            <option>Liberia</option><option>Sierra Leone</option><option>Guinea</option>
+            <option>Gambia</option><option>Mauritania</option><option>Somalia</option>
+            <option>Eritrea</option><option>Djibouti</option><option>Myanmar</option>
+            <option>North Korea</option><option>Venezuela</option><option>Honduras</option>
+            <option>Guatemala</option><option>Nicaragua</option>
+          </optgroup>
+        </select>
+        <div style="margin-top:1rem; margin-bottom:0.8rem; display:flex; align-items:center; gap:10px; background: rgba(232,184,75,0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(232,184,75,0.3);">
+          <input type="checkbox" id="ePscManualCheck" onchange="document.getElementById('ePscManualScore').disabled = !this.checked" style="width:16px; height:16px; cursor:pointer;">
+          <label for="ePscManualCheck" class="perf-label" style="margin-bottom:0; cursor:pointer; color:var(--warn);">Manuel Puan Girilsin mi?</label>
+          <input type="number" step="0.1" id="ePscManualScore" class="perf-input" style="width:100px; padding:4px 8px;" disabled placeholder="Örn: 5">
+      </div>
+      </div>
+      <!-- Sonuç butonları -->
+      <div style="margin-bottom:0.8rem;">
+        <label class="perf-label">Sonuç</label>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button type="button" class="psc-result-btn" id="ePscBtnClear"    onclick="ePscSelectResult('clear')">✅ Clear Geçiş</button>
+          <button type="button" class="psc-result-btn" id="ePscBtnRemark"   onclick="ePscSelectResult('remark')">⚠️ Remark</button>
+          <button type="button" class="psc-result-btn" id="ePscBtnDetained" onclick="ePscSelectResult('detained')">🚫 Detention</button>
+        </div>
+      </div>
+      <!-- Remark listesi -->
+       
+      <div id="ePscDetailSection" style="display:none;margin-bottom:0.8rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+          <label class="perf-label" style="margin-bottom:0;">Remark Listesi <span class="remark-count-badge" id="eRemarkCountBadge">0 remark</span></label>
+          <button class="remark-add-btn" onclick="eAddRemarkRow()">+ Remark Ekle</button>
+        </div>
+        <div class="remark-list" id="eRemarkList"></div>
+      </div>
+    </div>
+    <!-- Footer butonlar -->
+    <div style="padding:1rem 1.4rem;border-top:1px solid rgba(0,216,200,0.1);display:flex;gap:0.6rem;justify-content:flex-end;">
+      <button onclick="closePscEditModal()" style="background:rgba(255,90,114,0.08);border:1px solid rgba(255,90,114,0.25);color:var(--bad);border-radius:10px;padding:0.55rem 1.2rem;font-family:'Outfit',sans-serif;font-size:0.8rem;font-weight:600;cursor:pointer;">İptal</button>
+      <button onclick="perfSaveEditPSC()" style="background:linear-gradient(135deg,rgba(0,216,200,0.25),rgba(0,216,200,0.12));border:1px solid rgba(0,216,200,0.4);color:var(--teal);border-radius:10px;padding:0.55rem 1.4rem;font-family:'Outfit',sans-serif;font-size:0.8rem;font-weight:700;cursor:pointer;">💾 Değişiklikleri Kaydet</button>
+    </div>
+  </div>
+</div>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=DM+Mono:wght@400;500&family=Inter:wght@400;800;900&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<div id="welcomeScreen">
+    <div class="ws-grain"></div>
+    <div class="ws-cursor-glow" id="wsCursor"></div>
+
+    <div class="ws-stage">
+        <div class="ws-liquid-blob"></div>
+        <div class="ws-liquid-blob"></div>
+        <div class="ws-liquid-blob"></div>
+    </div>
+
+    <div class="ws-container">
+        <div class="ws-system-meta">
+            <span class="ws-pulse-dot"></span>
+            Connection Established // Node_049
+        </div>
+        
+        <h1 class="ws-shimmer-text">FİLO PANELİNE<br>HOŞGELDİNİZ</h1>
+
+        <div class="ws-footer-info">
+            <div class="ws-data-point">
+                <span class="ws-label">AUTHORIZED_ACCESS</span>
+                <span class="ws-value">ADMIN_ROOT</span>
+            </div>
+            <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.1);"></div>
+            <div class="ws-data-point">
+                <span class="ws-label">FLEET_STATUS</span>
+                <span class="ws-value">ACTIVE_SYNCHRONIZING</span>
+            </div>
+            <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.1);"></div>
+            <div class="ws-data-point">
+                <span class="ws-label">ENCRYPTION</span>
+                <span class="ws-value">AES-256-QUANTUM</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="ws-click-hint">SİSTEME GİRİŞ YAPMAK İÇİN TIKLAYIN</div>
+</div>
+
+<canvas id="kineticCanvas"></canvas>
+<div class="page-overlay"></div>
+
+<div id="navSidebar">
+  <button class="nav-toggle-btn" onclick="toggleSidebar()" title="Yan Menüyü Gizle/Göster">
+    <span class="toggle-icon">«</span>
+  </button>
+  <div class="nav-logo-wrap">
+  <span class="nav-logo-short"><img src="assets/icons/sparklogosidebar.png" style="width: 26px; height: 26px; object-fit: contain;"></span>
+  <span class="nav-label nav-logo-full">
+      <img src="assets/images/buyuksparksidebarlogo.png" style="width: 140px; object-fit: contain; margin-left: 12px; margin-top: 4px;">
+  </span>
+</div>
+     <div class="nav-divider"></div>
+  
+  <button class="nav-btn active" id="navBtnFleet" onclick="navSwitch('fleet')">
+    <span class="nav-icon">⬡</span>
+    <span class="nav-label">Gemi Bazlı Filo Sıralaması</span>
+  </button>
+  
+  <button class="nav-btn" id="navBtnInspector" onclick="navSwitch('inspector')">
+    <span class="nav-icon"><img src="assets/icons/supervisor.png" style="width:22px;height:22px;object-fit:contain;filter:brightness(0) invert(1);"></span>
+    <span class="nav-label">Enspektör Sıralaması</span>
+  </button>
+
+  <button class="nav-btn nav-btn-perf" id="navBtnPerf" onclick="navSwitch('perf')">
+    <span class="nav-icon">
+      <svg viewBox="0 0 24 24" style="width: 22px; height: 22px; filter: drop-shadow(0 0 5px rgba(0, 216, 200, 0.5)); color: var(--teal);" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+
+        <path d="M 2.5 8 Q -1 2 12 2 Q 25 2 21.5 8" />
+        
+        <path d="M 4 12 L 2.5 8 Q 12 10 21.5 8 L 20 12" />
+        
+        <path d="M 4 12 Q 12 15 20 12" />
+        
+        <path d="M 1.5 16 Q 12 19 22.5 16" />
+        
+        <path d="M 4 12 L 1.5 16" />
+        <path d="M 20 12 L 22.5 16" />
+        
+        <circle cx="12" cy="7.5" r="1.8" />
+      </svg>
+    </span>
+    <span class="nav-label">Kaptan & Çarkçıbaşı Performans Paneli</span>
+  </button>
+<button class="nav-btn" id="navBtnPscIstat" onclick="navSwitch('pscIstat')">
+    <span class="nav-icon"><img src="assets/icons/pscsekme.png" style="width: 28px; height: 28px; object-fit: contain; filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(0,216,200,0.6));"></span>
+    <span class="nav-label">Şirket PSC İstatistikleri</span>
+</button>
+
+<button class="nav-btn" id="navBtnSuperintendent" onclick="navSwitch('superintendent')">
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">Superintendent Ziyaret Özeti</span>
+</button>
+ </div> <div class="page" id="userPage">
+  <header class="reveal">
+    <div class="logo-mark">
+      <div class="logo-text">
+        <h1>Filo Monitor Sistemi V3</h1>
+<img src="assets/images/spark_logo2.jpg" alt="Spark Shipmanagement" style="height: 80px; margin-top: -15px; margin-left: -50px; object-fit: contain;">
+      <p id="headerSubtitle" style="display:none"></p>
+    </div>
+  </div>
+    <div class="header-right">
+      <div id="updateNotification" class="update-notification" style="display:none;">
+        <div class="un-bell">🔔</div>
+        <div class="un-content">
+          <div class="un-title">Panel Güncellendi!</div>
+          <span id="unDate" class="un-date">--</span>
+        </div>
+      </div>
+
+      <div class="last-update-bar" id="lastUpdateBar" style="display:none;">
+        <span class="lu-label">Son güncelleme:</span>
+        <span class="lu-date" id="lastUpdateDate">--</span>
+      </div>
+
+      <div style="display: flex; gap: 0.6rem; align-items: center;">
+        <label class="theme-switch-wrapper">
+          <input type="checkbox" id="themeToggleCheckbox" onchange="toggleTheme()">
+          <div class="theme-slider"></div>
+          <span id="themeToggleText">Theme: Dark</span>
+      </label>
+         <button id="btnLocalBackup" class="btn-cyber-backup" onclick="backupToLocalJSON()" title="Sistemi Yerel Diske Senkronize Et">
+            <svg id="backupBtnIcon" viewBox="0 0 24 24">
+               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+               <polyline points="7 10 12 15 17 10"></polyline>
+               <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span id="backupBtnText">LOCAL BACKUP</span>
+         </button>
+         <div class="header-badge"><div class="pulse-dot"></div>Canlı İzleme</div>
+      </div>
+    </div>  
+  </header>
+
+  <div class="summary" id="summaryCards"></div>
+
+
+  <div class="toolbar reveal">
+    <input class="search-box" id="searchBox" type="text" placeholder="Gemi ara..." oninput="applyFilters()">
+        <span class="result-count" id="resultCount"></span>
+  </div>
+
+  <div class="matrix-wrap reveal">
+    <div class="tab-switch">
+        
+        <button class="tab-btn custom-svg-tab active" id="viewRanking" onclick="switchView('ranking'); jumpShip(event)">
+            <div class="tab-content">
+                <div class="check-box">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <span class="tab-text">Filo Sıralama</span>
+            </div>
+            <div class="svg-bg">
+                <svg class="ship-scene-tab" viewBox="0 0 200 100" preserveAspectRatio="xMaxYMid meet" xmlns="http://www.w3.org/2000/svg">
+                    <path class="wave-back-tab" d="M 0 60 Q 25 50 50 60 T 100 60 T 150 60 T 200 60 T 250 60 L 250 100 L 0 100 Z" />
+                    <g id="ship-wrapper-tab" class="bobbing-tab">
+                        <rect x="100" y="30" width="10" height="15" fill="#a03b30"/> <rect x="90" y="40" width="30" height="20" fill="#9caaa6" rx="2"/> <polygon points="75,60 160,60 150,70 75,70" fill="#203334"/> <polygon points="75,70 150,70 140,85 80,85" fill="#7a2b22"/> </g>
+                    <path class="wave-front-tab" d="M -50 75 Q -25 65 0 75 T 50 75 T 100 75 T 150 75 T 200 75 T 250 75 L 250 100 L -50 100 Z" />
+                </svg>
+            </div>
+        </button>
+
+        <button class="tab-btn" id="viewMatrix" onclick="switchView('matrix')">📊 Yanıt Matrisi</button>
+        
+        <button class="tab-btn" id="viewGunluk" onclick="switchView('gunluk')">📅 Günlük İş Raporları</button>
+        
+        <button class="tab-btn" id="viewAylik" onclick="switchView('aylik')">📆 Aylık Raporlar</button>
+        <button class="tab-btn" id="viewTechWeekly" onclick="switchView('techWeekly')">⚙️ Tech Weekly</button>
+<button class="tab-btn" id="viewTechMonthly" onclick="switchView('techMonthly')">⚙️ Tech Monthly</button>
+
+        <button class="tab-btn" id="viewDefect" onclick="switchView('defect')" style="display:flex;align-items:center;gap:0.5rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Defect Listesi
+        </button>
+
+        <button class="tab-btn" id="viewDrill" onclick="switchView('drill')" style="display:flex;align-items:center;gap:0.5rem;">
+          🛟 Drill Quality Bonus
+      </button>
+
+      <button class="tab-btn" id="viewOverdue" onclick="switchView('overdue')" style="display:flex;align-items:center;gap:0.5rem;">
+          <div style="width:22px;height:22px;flex-shrink:0;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+<defs>
+    <linearGradient id="wrenchGradTeal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f0e0"/>
+      <stop offset="50%" stop-color="#00d8c8"/>
+      <stop offset="100%" stop-color="#007a70"/>
+    </linearGradient>
+    <mask id="wrench-mask-teal">
+      <rect width="100" height="100" fill="white"/>
+      <circle cx="75" cy="50" r="6" fill="black"/>
+      <rect x="5" y="41" width="22" height="18" fill="black" rx="2"/>
+    </mask>
+    <filter id="shadow-teal" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <rect class="interactive-area-teal" width="100" height="100"/>
+  <g transform="rotate(-40 50 50)">
+    <g class="spanner-anim-teal">
+      <g mask="url(#wrench-mask-teal)" filter="url(#shadow-teal)">
+        <rect x="20" y="43" width="60" height="14" fill="url(#wrenchGradTeal)"/>
+        <circle cx="25" cy="50" r="16" fill="url(#wrenchGradTeal)"/>
+        <circle cx="75" cy="50" r="14" fill="url(#wrenchGradTeal)"/>
+        <rect x="32" y="46.5" width="34" height="7" rx="3" fill="#003d38" opacity="0.35"/>
+      </g>
+    </g>
+  </g>
+</svg>
+            </div>
+Fleet Overdue Job Statics
+        </button>
+
+        <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+            PDF İndir
+        </button>
+
+    </div>
+
+    
+
+    <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                    <div id="gnWeekContainer" style="display:none; margin-bottom:1.5rem; background:rgba(0,216,200,0.05); padding:10px 15px; border-radius:8px; border:1px solid var(--border); width:fit-content;">
+            <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">ACTIVE REPORT WEEK:</span>
+            <span id="gnWeekLabel" style="font-family:'DM Mono',monospace;font-size:0.9rem;color:var(--teal);margin-left:10px;font-weight:700;"></span>
+        </div>
+
+        <div id="aylikMonthContainer" style="display:none; margin-bottom:1.5rem; background:rgba(0,216,200,0.05); padding:10px 15px; border-radius:8px; border:1px solid var(--border); width:fit-content; align-items:center;">
+            <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">ACTIVE REPORT MONTH:</span>
+            <span id="aylikMonthLabel" onclick="document.getElementById('aylikMonthSelect').showPicker()" style="font-family:'DM Mono',monospace;font-size:0.9rem;color:var(--teal);margin-left:10px;font-weight:700;cursor:pointer;border-bottom:1px solid var(--teal);">—</span>
+            <input type="month" id="aylikMonthSelect" lang="en" class="admin-input" style="width:0;height:0;opacity:0;position:absolute;pointer-events:none;" onchange="changeAylikMonth(this.value)">
+        </div>
+    </div>
+    <div id="techWeeklyDateContainer" style="display:none; margin-bottom:1.5rem; background:rgba(66,133,244,0.05); padding:10px 15px; border-radius:8px; border:1px solid var(--border); width:fit-content; align-items:center;">
+      <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">TECH WEEKLY REPORT:</span>
+      <input type="date" id="techWeeklyDateSelect" class="admin-input" style="background:transparent; border:none; color:#4285f4; font-family:'DM Mono'; font-weight:700; outline:none; margin-left:10px; cursor:pointer;" onchange="changeTechWeeklyDate(this.value)">
+  </div>
+  
+  <div id="techMonthlyDateContainer" style="display:none; margin-bottom:1.5rem; background:rgba(66,133,244,0.05); padding:10px 15px; border-radius:8px; border:1px solid var(--border); width:fit-content; align-items:center;">
+      <span style="font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--muted);">TECH MONTHLY REPORT:</span>
+      <input type="month" id="techMonthlyDateSelect" class="admin-input" style="background:transparent; border:none; color:#4285f4; font-family:'DM Mono'; font-weight:700; outline:none; margin-left:10px; cursor:pointer;" onchange="changeTechMonthlyDate(this.value)">
+  </div>
+<div id="rankingModeBar" style="display:flex; gap:0.6rem; margin-bottom:1.5rem;">
+  
+  <button id="rmAlltime" onclick="switchRankingMode('alltime')" class="ranking-mode-btn active-gold">
+    <img src="assets/icons/clock.png"> All Time Top
+  </button>
+
+  <button id="rmAylik" onclick="switchRankingMode('aylik')" class="ranking-mode-btn">
+    <img src="assets/icons/30-days.png"> Aylık Sıralama
+  </button>
+
+  <button id="rmHaftalik" onclick="switchRankingMode('haftalik')" class="ranking-mode-btn active-teal">
+    <img src="assets/icons/7-days.png"> Haftalık Sıralama
+  </button>
+
+</div>
+    <table id="matrisTable">
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <!-- ŞAMPİYONLAR LİGİ KARTLARI -->
+    <div id="hallOfFameContainer" class="gh-reveal" style="display:none; background:var(--glass); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-top:2.5rem; backdrop-filter:blur(24px);">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.1rem;font-weight:700;color:#ffffff;margin-bottom:0.5rem;border-left:3px solid var(--gold);padding-left:0.75rem;display:flex;align-items:center;gap:8px;">
+           Haftalık Şampiyonlar Geçmişi
+      </div>
+      <p style="font-family:'DM Mono'; font-size:0.75rem; color:var(--muted); margin-bottom: 1.5rem; padding-left: 1rem;">Cuma günleri alınan otomatik kayıtlara göre o haftanın ilk 3 gemisi.</p>
+      
+      <div id="hallOfFameScrollArea" class="apple-scrollbar" style="display:flex; gap:1rem; overflow-x:auto; padding-bottom:1rem;">
+          <!-- Kartlar JS ile buraya basılacak -->
+      </div>
+  </div>
+
+    <div id="viewOverdueContent" style="display:none; padding: 1rem 0;">
+        <div class="chart-wrap" style="height: 550px; width: 100%; margin-bottom: 3.5rem;">
+            <canvas id="chartOverdue"></canvas>
+        </div>
+        
+        <h3 style="font-family:'Outfit'; color:var(--teal); font-size:1.1rem; margin-bottom:1rem; padding-left:1rem; border-left:3px solid var(--teal);">📈 Filo Genel Overdue İstatistiği (Tarihsel)</h3>
+        <div class="chart-wrap" style="height: 320px; width: 100%; background:var(--glass); border:1px solid var(--border); border-radius:16px; padding:1.5rem; backdrop-filter:blur(24px); margin-bottom: 1.5rem;">
+            <canvas id="chartOverdueHistory"></canvas>
+        </div>
+        
+        <div style="text-align: right; padding-right: 1rem;">
+            <button class="btn-modern-save" onclick="manualSaveOverdueHistory()">💾 Güncel Toplamı Grafiğe İşle</button>
+       </div>
+    </div>
+    <div id="viewDrillContent" style="display:none; padding: 1rem 0;"></div>
+    <div id="viewDefectContent" style="display:none; padding: 1rem 0;">
+        <div id="defectViewContainer"></div>
+    </div>
+
+    <div id="chartsRow" style="display:none; grid-template-columns:2fr 1fr; gap:0.85rem; margin-top:1.5rem;">
+      <div class="glass-box">
+        <div class="box-title">Vessel Feedback Statics</div>
+        <div class="chart-wrap"><canvas id="chartGemi"></canvas></div>
+      </div>
+      <div class="glass-box">
+        <div class="box-title">Mail Feedback Statics</div>
+        <div class="chart-wrap"><canvas id="chartMail"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="reveal">
+    <span class="footer-logo" onclick="openAdmin()" title="Admin Girişi (Şifre: admin123)">FİLO TAKİP SİSTEMİ</span>
+    <span id="footerDate"></span>
+  </footer>
+</div>
+<div id="pdfOverlay">
+        <div class="pdf-overlay-spinner"></div>
+        <div class="pdf-overlay-text">RAPOR OLUŞTURULUYOR...</div>
+        <div class="pdf-overlay-sub" id="pdfOverlayTab">Lütfen bekleyin</div>
+    </div>
+<div id="adminPanel">
+  <div class="admin-header">
+    <div class="admin-title">YÖNETİCİ PANELİ</div>
+    <button class="close-btn" onclick="closeAdmin()">Kapat & Kaydet</button>
+  </div>
+  
+  <div class="admin-grid">
+    <div class="admin-col">
+<div style="margin-bottom:1.5rem;">
+  <h3>🔺 Gemi Sıralama Okları</h3>
+  <div class="glass-box" style="padding:1rem;">
+    <div style="margin-bottom:0.8rem; display:flex; gap:1rem; align-items:center;">
+      <label style="font-family:'DM Mono';font-size:0.75rem;color:var(--muted);">MOD:</label>
+      <button class="admin-btn" onclick="setArrowMode('auto')" id="arrowModeAutoBtn">🤖 Otomatik</button>
+      <button class="admin-btn" onclick="setArrowMode('manual')" id="arrowModeManualBtn">✏️ Manuel</button>
+    </div>
+    <div id="manualArrowTable"></div>
+  </div>
+</div>
+<div style="margin-bottom:1.5rem;">
+  <h3>🚀 Performans Paneli Durumu</h3>
+  <div class="glass-box" style="padding:1rem;">
+    <p style="font-family:'DM Mono';font-size:0.75rem;color:var(--muted);margin-bottom:0.8rem;">Performans sekmesini kapatıp "Coming Soon" ekranı göstermek için kullanın.</p>
+    <button class="admin-btn" id="btnToggleComingSoon" onclick="toggleComingSoon()" style="width:100%; font-size: 0.8rem;"></button>
+  </div>
+</div>
+      <h3>Yeni Mail Ekle</h3>
+      <div class="glass-box" style="padding:1rem; margin-bottom:1.5rem;">
+        <div class="admin-form-group">
+          <input type="text" id="newMailSubject" class="admin-input" placeholder="Mail Konusu (Örn: SINTINE)">
+        </div>
+        <div class="admin-form-group">
+          <input type="text" id="newMailDate" class="admin-input" placeholder="Tarih (Örn: 25.02.2026)">
+        </div>
+        <button class="admin-btn" onclick="addNewMail()">+ Ekle</button>
+      </div>
+
+      <h3>Mevcut Mailler</h3>
+      <div id="adminMailList"></div>
+<div style="margin-bottom:1.5rem; margin-top:2rem; border-top:1px solid var(--border); padding-top:1rem;">
+  <h3>👨‍💼 Enspektör Puanlarını Arşivle</h3>
+  <div class="glass-box" style="padding:1rem;">
+    <p style="font-family:'DM Mono';font-size:0.7rem;color:var(--muted);margin-bottom:0.8rem;">Cuma günleri enspektörlerin o haftaki final ortalamalarını geçmişe kaydetmek için kullanın.</p>
+    <div style="display:flex; gap:10px; align-items:center;">
+        <input type="date" id="adminInspDate" class="admin-input" style="width:auto;" title="Haftanın Tarihi">
+        <button class="admin-btn" onclick="saveInspectorHistory()" style="background:linear-gradient(135deg,var(--gold),#a06800); color:#000;">💾 Bu Haftayı Kaydet</button>
+    </div>
+  </div>
+</div>
+      <button class="admin-btn danger" onclick="resetData()" style="margin-top:20px; width:100%">Tüm Verileri Sıfırla</button>
+    </div>
+
+    <div class="admin-col">
+      <h3 id="editTitle">Mail Seçiniz...</h3>
+      <div class="glass-box" id="editArea" style="opacity:0.5; pointer-events:none;">
+        <p style="font-size:0.8rem; margin-bottom:1rem; color:var(--muted)">Hangi gemiler cevap verdi? (Yeşil = Evet)</p>
+        <p style="font-size:0.68rem; margin-bottom:1rem; color:rgba(150,170,165,0.6); font-family:'DM Mono';">✓ Cevap verdi → ✗ Cevap vermedi → ⊘ Muaf (istatistik dışı) — 3. tıklamada gri olur</p>
+        <div class="ship-check-grid" id="shipCheckGrid"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="adminGunlukPanel" style="display:none; margin-top:2.5rem; border-top:1px solid var(--border); padding-top:2rem;">
+    <div class="admin-col" style="max-width:100%">
+      <h3 style="margin-bottom:1.2rem;">📅 Günlük İş Raporu — Hafta Seç & Düzenle</h3>
+      
+      <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap;">
+        <div class="admin-form-group" style="margin:0;">
+          <label style="font-family:'DM Mono';font-size:0.65rem;color:var(--muted);display:block;margin-bottom:4px;">RAPOR HAFTASI BAŞLANGICI (SADECE CUMA)</label>
+          <input type="date" id="gnHaftaBaslangic" class="admin-input" style="width:auto;" onchange="gnRenderAdminHafta()">
+        </div>
+        <button class="admin-btn" onclick="gnRenderAdminHafta()">Haftayı Yükle</button>
+
+        <button class="admin-btn" onclick="gnHaftaKaydet()" style="background:linear-gradient(135deg,var(--ok),#00b890);">💾 Kaydet</button>
+
+<button class="admin-btn" onclick="commitWeekTo('haftalik')" style="background:linear-gradient(135deg,#f0a500,#c47f00);">📅 Haftalık İstatistiğe Ekle</button>
+<button class="admin-btn" onclick="commitWeekTo('aylik')"    style="background:linear-gradient(135deg,#9b72cf,#6b42af);">🗓 Aylık İstatistiğe Ekle</button>
+<button class="admin-btn" onclick="commitWeekTo('alltime')"  style="background:linear-gradient(135deg,#00d8c8,#009890);">🏆 All Time Top'a Ekle</button>
+      </div>
+      <div id="committedWeeksList" style="margin-top:0.8rem; font-family:'DM Mono'; font-size:0.72rem;"></div>
+      <div id="gnAdminTable" style="overflow-x:auto;"></div>
+    </div>
+  </div>
+
+  <div id="adminAylikPanel" style="display:none; margin-top:2.5rem; border-top:1px solid var(--border); padding-top:2rem;">
+    <div class="admin-col" style="max-width:100%">
+      <h3 style="margin-bottom:1.2rem;">📆 Aylık Raporlar — Ay Seç & Düzenle</h3>
+      
+      <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap;">
+        <div class="admin-form-group" style="margin:0;">
+          <label style="font-family:'DM Mono';font-size:0.65rem;color:var(--muted);display:block;margin-bottom:4px;">RAPOR AYI</label>
+          <input type="month" id="adminAylikMonth" class="admin-input" style="width:auto;" onchange="renderAdminAylik()">
+        </div>
+        <button class="admin-btn" onclick="saveAdminAylik()" style="background:linear-gradient(135deg,var(--ok),#00b890);">💾 Kaydet</button>
+<button class="admin-btn" onclick="commitMonthTo('haftalik')" style="background:linear-gradient(135deg,#f0a500,#c47f00);">📅 Haftalık İstatistiğe Ekle</button>
+<button class="admin-btn" onclick="commitMonthTo('aylik')"    style="background:linear-gradient(135deg,#9b72cf,#6b42af);">🗓 Aylık İstatistiğe Ekle</button>
+<button class="admin-btn" onclick="commitMonthTo('alltime')"  style="background:linear-gradient(135deg,#00d8c8,#009890);">🏆 All Time Top'a Ekle</button>
+      </div>
+      <div id="committedMonthsList" style="margin-top:0.8rem; font-family:'DM Mono'; font-size:0.72rem;"></div>
+      <div id="adminAylikTableContainer" style="overflow-x:auto;"></div>
+    </div>
+  </div>
+  <div id="adminTechWeeklyPanel" style="display:none; margin-top:2.5rem; border-top:1px solid var(--border); padding-top:2rem;">
+    <div class="admin-col" style="max-width:100%">
+      <h3 style="margin-bottom:1.2rem; color:var(--teal);">⚙️ TECHNICAL: Weekly Reports</h3>
+      <p style="font-size:0.7rem; color:var(--muted); margin-bottom:1rem;">Kırmızı = Yok (✗), Yeşil = Yaptı (✓), Gri = Muaf (⊘)</p>
+      
+      <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap;">
+        <div class="admin-form-group" style="margin:0;">
+          <label style="font-family:'DM Mono';font-size:0.65rem;color:var(--muted);display:block;margin-bottom:4px;">RAPOR HAFTASI</label>
+          <input type="date" id="adminTechWeeklyDate" class="admin-input" style="width:auto;" onchange="renderAdminTechWeekly()">
+        </div>
+        <button class="admin-btn" onclick="saveAdminTechWeekly()" style="background:linear-gradient(135deg,var(--ok),#00b890);">💾 Kaydet</button>
+        <button class="admin-btn" onclick="commitTechWeekTo('haftalik')" style="background:linear-gradient(135deg,#f0a500,#c47f00);">📅 Hft. İstatistiğe Ekle</button>
+        <button class="admin-btn" onclick="commitTechWeekTo('aylik')" style="background:linear-gradient(135deg,#9b72cf,#6b42af);">🗓 Aylık İstatistiğe Ekle</button>
+        <button class="admin-btn" onclick="commitTechWeekTo('alltime')"  style="background:linear-gradient(135deg,#00d8c8,#009890);">🏆 All Time Top Ekle</button>
+      </div>
+      
+      <div id="committedTechWeeksList" style="margin-top:0.8rem; margin-bottom:1.5rem; font-family:'DM Mono'; font-size:0.72rem;"></div>
+
+      <div id="adminTechWeeklyTable" style="overflow-x:auto;"></div>
+    </div>
+</div>
+
+<div id="adminTechMonthlyPanel" style="display:none; margin-top:2.5rem; border-top:1px solid var(--border); padding-top:2rem;">
+  <div class="admin-col" style="max-width:100%">
+    <h3 style="margin-bottom:1.2rem; color:var(--teal);">⚙️ TECHNICAL: Monthly Reports</h3>
+    <p style="font-size:0.7rem; color:var(--muted); margin-bottom:1rem;">Kırmızı = Yok (✗), Yeşil = Yaptı (✓), Gri = Muaf (⊘)</p>
+
+    <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;flex-wrap:wrap;">
+      <div class="admin-form-group" style="margin:0;">
+        <label style="font-family:'DM Mono';font-size:0.65rem;color:var(--muted);display:block;margin-bottom:4px;">RAPOR AYI</label>
+        <input type="month" id="adminTechMonthlyDate" class="admin-input" style="width:auto;" onchange="renderAdminTechMonthly()">
+      </div>
+      <button class="admin-btn" onclick="saveAdminTechMonthly()" style="background:linear-gradient(135deg,var(--ok),#00b890);">💾 Kaydet</button>
+      <button class="admin-btn" onclick="commitTechMonthTo('haftalik')" style="background:linear-gradient(135deg,#f0a500,#c47f00);">📅 Hft. İstatistiğe Ekle</button>
+      <button class="admin-btn" onclick="commitTechMonthTo('aylik')"    style="background:linear-gradient(135deg,#9b72cf,#6b42af);">🗓 Ay. İstatistiğe Ekle</button>
+      <button class="admin-btn" onclick="commitTechMonthTo('alltime')"  style="background:linear-gradient(135deg,#00d8c8,#009890);">🏆 All Time Top Ekle</button>
+    </div>
+
+    <div id="committedTechMonthsList" style="margin-top:0.8rem; margin-bottom:1.5rem; font-family:'DM Mono'; font-size:0.72rem;"></div>
+
+    <div id="adminTechMonthlyTable" style="overflow-x:auto;"></div>
+  </div>
+</div>
+<div id="adminCompliancePanel" style="display:none; margin-top:2.5rem; border-top:1px solid var(--border); padding-top:2rem;">
+      <div class="admin-col" style="max-width:100%">
+        <h3 style="margin-bottom:1.2rem;">📝 Compliance Bonus</h3>
+        <p style="font-family:'DM Mono';font-size:0.68rem;color:var(--muted);margin-bottom:1.5rem;">Gemilere manuel olarak eksi (-) ceza veya artı (+) bonus puanı girebilirsiniz.</p>
+          <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;">
+            <button class="admin-btn" onclick="saveAdminCompliance()" style="background:linear-gradient(135deg,var(--ok),#00b890);">💾 Kaydet</button>
+            <button class="admin-btn" id="btnToggleComplianceVisibility" onclick="toggleComplianceColumn()">👁️ Sütunu Gizle</button>
+          </div>
+          
+          <div id="adminComplianceTableContainer" style="overflow-x:auto;"></div>
+      </div>
+  </div>
+  <div id="adminDrillPanel" style="display:none; margin-top:2.5rem; border-top:1px solid var(--border); padding-top:2rem;">
+    <div class="admin-col" style="max-width:100%">
+        <h3 style="margin-bottom:1.2rem;">🛟 Drill Quality Bonus</h3>
+        <p style="font-family:'DM Mono';font-size:0.68rem;color:var(--muted);margin-bottom:1.5rem;">Gemilerin talim kalitesini listeden seçerek puanlayın.</p>
+        <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;">
+            <button class="admin-btn" onclick="saveAdminDrill()" style="background:linear-gradient(135deg,var(--ok),#00b890);">💾 Kaydet</button>
+        </div>
+        <div id="adminDrillTableContainer" style="overflow-x:auto;"></div>
+    </div>
+</div>
+<div id="adminOverduePanel" style="display:none; margin-top:2.5rem; border-top:1px solid var(--border); padding-top:2rem;">
+  <div class="admin-col" style="max-width:100%">
+      <h3 style="margin-bottom:1.2rem;">🔧 Fleet Overdue Job Statics — Değerleri Düzenle</h3>
+      <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;">
+        <button class="admin-btn" onclick="saveAdminOverdue()" style="background:linear-gradient(135deg,var(--ok),#00b890);">💾 Kaydet</button>
+      </div>
+      <div id="adminOverdueTableContainer" style="overflow-x:auto;"></div>
+  </div>
+</div>
+
+  <div id="adminDefectPanel" style="display:none; margin-top:2.5rem; border-top:1px solid var(--border); padding-top:2rem;">
+      <div class="admin-col" style="max-width:100%">
+          <h3 style="margin-bottom:0.5rem;">📋 Defect Listesi — Gemi Bazlı Güncelle</h3>
+          <p style="font-family:'DM Mono';font-size:0.68rem;color:var(--muted);margin-bottom:1.5rem;">Her gemi için son rapordaki defect sayısını, rapor tarihini ve varsa notu girin.</p>
+          <div style="display:flex;gap:1rem;align-items:flex-end;margin-bottom:1.5rem;">
+              <button class="admin-btn" onclick="saveAdminDefect()" style="background:linear-gradient(135deg,var(--ok),#00b890);">💾 Kaydet</button>
+              <button class="admin-btn" onclick="fetchDefectFromSheets()" style="background:linear-gradient(135deg,var(--teal),#008880);">🔄 Google Sheets'ten Çek</button>
+          </div>
+          <div id="adminDefectTableContainer" style="overflow-x:auto;"></div>
+      </div>
+  </div>
+
+</div>
+
+
+
+
+
+<div id="inspectorPanel" style="display:none; min-height:100vh; background:transparent; position:relative; z-index:2; padding:2.5rem 2rem 3rem; padding-left:calc(64px + 2rem); max-width:1400px; margin:0 auto;">
+    
+    <div class="perf-header">
+        <div class="perf-header-left">
+     
+          <h2>Ofis Enspektör Sıralaması</h2>
+          <img src="assets/images/spark_logo2.jpg" alt="Spark Shipmanagement" style="height: 80px; margin-top: -15px; margin-left: -120px; object-fit: contain;">
+          <p>Sorumlu Olunan Gemilerin "Haftalık" Ortalamasına Göre Başarı Tablosu</p>
+        </div>  
+    </div>
+    <div class="perf-table-wrap">
+        <div class="perf-table-title">Canlı Sıralama (Mevcut Hafta)</div>
+        <table class="perf-tbl">
+            <thead>
+                <tr>
+                    <th style="width:60px; text-align:center;">Sıra</th>
+                    <th>Enspektör Adı</th>
+                    <th>Sorumlu Olduğu Gemiler</th>
+                    <th style="width:200px; text-align:center;">Haftalık Ortalama Skor</th>
+                </tr>
+            </thead>
+            <tbody id="inspectorLiveBody"></tbody>
+        </table>
+    </div>
+
+    <div class="perf-table-wrap" style="margin-top:2rem;">
+        <div class="perf-table-title" style="color:var(--teal);">🕰️ Geçmiş Haftaların Arşivi</div>
+        <div id="inspectorHistoryBody" style="padding:1.5rem;"></div>
+    </div>
+</div>
+<div id="perfPanel">
+  
+  <div id="perfComingSoon">
+      <div class="cs-text">COMING SOON</div>
+      <div class="cs-sub">MODÜL GÜNCELLENİYOR</div>
+  </div>
+
+  <div id="perfActualContent">
+      <div class="perf-header">
+        <div class="perf-header-left">
+          <div class="ph-top-label">SPARK SHIPMANAGEMENT</div>
+          <h2>Kaptan & Çarkçıbaşı Performans Paneli</h2>
+          <p>Personel Performans Skorlama ve Takip Sistemi</p>
+        </div>  
+        <button class="perf-admin-entry" onclick="perfOpenAdminModal()">🔐 Admin Girişi</button>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        
+        <div class="perf-subtabs" style="margin-bottom: 0;">
+          <button class="perf-stab active" onclick="perfSubTab('kaptan',this)">⚓ Filo Aktif Kaptanlar</button>
+          <button class="perf-stab" onclick="perfSubTab('carkci',this)">⚙️ Filo Aktif Çarkçıbaşılar</button>
+          <button class="perf-stab" onclick="perfSubTab('tatil_kaptan',this)">🌴 Tatildeki Kaptanlar</button>
+          <button class="perf-stab" onclick="perfSubTab('tatil_carkci',this)">🌴 Tatildeki Çarkçıbaşılar</button>
+        </div>
+
+      <img src="assets/images/spark_logo2.jpg" alt="Spark Shipmanagement" style="display: block; width: 320px; height: 80px; object-fit: contain; object-position: right; mix-blend-mode: screen; opacity: 1.0; margin-right: 15px;">
+
+      </div>
+      <div id="perfTabKaptan">
+        <div class="perf-table-wrap">
+          <div class="perf-table-title">Aktif Kaptan Sıralaması</div>
+          <table class="perf-tbl"><thead><tr>
+            <th style="width:52px">Sıra</th><th>Ad Soyad</th><th>Skor</th><th>Malzeme İsteme Sıklığı</th>
+          </tr></thead><tbody id="perfKaptanBody">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted);font-family:'DM Mono',monospace;font-size:.7rem;padding:2.5rem;">Henüz kayıt yok. Admin girişinden ekleyiniz.</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <div id="perfTabCarkci" style="display:none;">
+        <div class="perf-table-wrap">
+          <div class="perf-table-title">Aktif Çarkçıbaşı Sıralaması</div>
+          <table class="perf-tbl"><thead><tr>
+            <th style="width:52px">Sıra</th><th>Ad Soyad</th><th>Skor</th><th>Malzeme İsteme Sıklığı</th>
+          </tr></thead><tbody id="perfCarkciBody">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted);font-family:'DM Mono',monospace;font-size:.7rem;padding:2.5rem;">Henüz kayıt yok. Admin girişinden ekleyiniz.</td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <div id="perfTabTatilKaptan" style="display:none;">
+        <div class="perf-table-wrap">
+          <div class="perf-table-title">Tatilde Olan Kaptanlar Sıralaması</div>
+          <table class="perf-tbl"><thead><tr>
+            <th style="width:52px">Sıra</th><th>Ad Soyad</th><th>Son Gemi</th><th>Aktif Hizmet Süresi</th><th>Skor</th>
+          </tr></thead><tbody id="perfTatilKaptanBody">
+          </tbody></table>
+        </div>
+      </div>
+
+      <div id="perfTabTatilCarkci" style="display:none;">
+        <div class="perf-table-wrap">
+          <div class="perf-table-title">Tatilde Olan Çarkçıbaşılar Sıralaması</div>
+          <table class="perf-tbl"><thead><tr>
+            <th style="width:52px">Sıra</th><th>Ad Soyad</th><th>Son Gemi</th><th>Aktif Hizmet Süresi</th><th>Skor</th>
+          </tr></thead><tbody id="perfTatilCarkciBody">
+          </tbody></table>
+        </div>
+      </div>
+  </div> </div> 
+<div id="pscIstatPanel" style="display:none; position:relative; z-index:2; padding:2.5rem 2rem 3rem; padding-left:calc(64px + 2.2rem); max-width:1400px; margin:0 auto;">
+  <h2 style="font-family:'Plus Jakarta Sans',sans-serif; font-size:1.4rem; font-weight:700; color:#ffffff; margin-bottom:1.8rem; display:flex; align-items:center; gap:0.6rem;">
+    <img src="assets/icons/pscsekme.png" style="width: 28px; height: 28px; object-fit: contain; filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(0,216,200,0.6));"> Şirket PSC İstatistikleri
+  </h2>
+  <div id="pscIstatContent"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     SUPERINTENDENT VISIT SUMMARY PANELİ
+═══════════════════════════════════════════════════════════════════ -->
+<div id="superintendentPanel" style="display:none; position:relative; z-index:2; padding:2.5rem 2rem 3rem; padding-left:calc(64px + 2.2rem); max-width:1600px; margin:0 auto;">
+
+  <!-- Başlık -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div style="font-size:11px;font-weight:700;letter-spacing:2px;color:var(--teal);text-transform:uppercase;margin-bottom:4px;">SPARK SHIPMANAGEMENT</div>
+      <h2 style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;color:#fff;margin:0;display:flex;align-items:center;gap:10px;">
+        🚢 Superintendent Ziyaret Özeti
+      </h2>
+      <p style="color:var(--muted);font-size:0.8rem;margin-top:4px;">Departman Bazlı Gemi Ziyaret Takip Sistemi — Firebase Bağlantılı</p>
+    </div>
+    <div id="suptLoadingWrap" style="display:none;align-items:center;gap:8px;color:var(--teal);font-family:'DM Mono',monospace;font-size:0.75rem;">
+      <div style="width:16px;height:16px;border:2px solid var(--teal);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+      Yükleniyor...
+    </div>
+  </div>
+
+  <!-- Sekmeler -->
+  <div style="display:flex;gap:2px;background:rgba(0,0,0,0.3);border-radius:8px;padding:4px;margin-bottom:1.5rem;overflow-x:auto;flex-wrap:nowrap;">
+    <button class="supt-tab active" data-panel="p-toplam"
+      style="flex:0 0 auto;padding:10px 18px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:rgba(0,216,200,0.15);color:var(--teal);white-space:nowrap;">
+      📊 Genel Özet
+    </button>
+    <button class="supt-tab" data-panel="p-calisan"
+      style="flex:0 0 auto;padding:10px 18px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:var(--muted);white-space:nowrap;">
+      👤 Çalışan Bazlı
+    </button>
+    <button class="supt-tab" data-panel="p-bulk"
+      style="flex:0 0 auto;padding:10px 18px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:var(--muted);white-space:nowrap;">
+      📋 Ziyaret Tablosu
+    </button>
+    <button class="supt-tab" data-panel="p-op"
+      style="flex:0 0 auto;padding:10px 18px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:#7ab3e8;white-space:nowrap;">
+      ● Bulk Operasyon
+    </button>
+    <button class="supt-tab" data-panel="p-tek"
+      style="flex:0 0 auto;padding:10px 18px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:#7abf8a;white-space:nowrap;">
+      ● Bulk Teknik
+    </button>
+    <button class="supt-tab" data-panel="p-hseq"
+      style="flex:0 0 auto;padding:10px 18px;font-size:12px;font-weight:600;border:none;border-radius:6px;cursor:pointer;transition:all .15s;background:transparent;color:#c49de0;white-space:nowrap;">
+      ● Bulk HSEQ
+    </button>
+  </div>
+
+  <!-- ── GENEL ÖZET ── -->
+  <div id="p-toplam" class="supt-panel">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px;">
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-left:4px solid #e8a020;border-radius:8px;padding:18px 20px;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Toplam Ziyaret</div>
+        <div id="suptCardVisits" style="font-size:28px;font-weight:800;color:#fff;font-family:'DM Mono',monospace;">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">tüm departmanlar</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-left:4px solid #2e5fa3;border-radius:8px;padding:18px 20px;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Toplam Gün</div>
+        <div id="suptCardDays" style="font-size:28px;font-weight:800;color:#fff;font-family:'DM Mono',monospace;">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">tüm ziyaretler</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-left:4px solid #7b3fa0;border-radius:8px;padding:18px 20px;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Çalışan Sayısı</div>
+        <div id="suptCardPeople" style="font-size:28px;font-weight:800;color:#fff;font-family:'DM Mono',monospace;">—</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px;">aktif çalışan</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Tüm Ziyaret Kayıtları</div>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;overflow:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:#0d1b2a;">
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#fff;white-space:nowrap;">Ay</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#fff;white-space:nowrap;">Çalışan</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#fff;white-space:nowrap;">Gemi</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#fff;white-space:nowrap;">Departman</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#fff;white-space:nowrap;">Gün</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#fff;white-space:nowrap;">Gidiş</th>
+            <th style="padding:10px 12px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#fff;white-space:nowrap;">Dönüş</th>
+          </tr>
+        </thead>
+        <tbody id="suptToplamBody">
+          <tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--muted);">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── ÇALIŞAN BAZLI ── -->
+  <div id="p-calisan" class="supt-panel" style="display:none;">
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;overflow:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:#0d1b2a;">
+            <th style="padding:10px 12px;text-align:left;color:#fff;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Çalışan</th>
+            <th style="padding:10px 12px;text-align:left;color:#fff;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Departman</th>
+            <th style="padding:10px 12px;text-align:left;color:#fff;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Toplam Gün</th>
+            <th style="padding:10px 12px;text-align:left;color:#fff;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Ziyaret Sayısı</th>
+            <th style="padding:10px 12px;text-align:left;color:#fff;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Ziyaret Edilen Gemiler</th>
+          </tr>
+        </thead>
+        <tbody id="suptCalisanBody">
+          <tr><td colspan="5" style="text-align:center;padding:2rem;color:var(--muted);">Yükleniyor...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── ZİYARET TABLOSU ── -->
+  <div id="p-bulk" class="supt-panel" style="display:none;">
+    <div id="suptBulkTable" style="overflow:auto;border-radius:8px;"></div>
+  </div>
+
+  <!-- ── OPERASYON ── -->
+  <div id="p-op" class="supt-panel" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="background:#dce8f8;color:#2e5fa3;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">OPERASYON</span>
+      <span style="color:var(--muted);font-size:11px;">Hücreye tıklayarak ziyaret ekleyebilirsiniz</span>
+    </div>
+    <div id="suptDeptTable_op"></div>
+  </div>
+
+  <!-- ── TEKNİK ── -->
+  <div id="p-tek" class="supt-panel" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="background:#d5edd9;color:#1a7a4a;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">TEKNİK</span>
+      <span style="color:var(--muted);font-size:11px;">Hücreye tıklayarak ziyaret ekleyebilirsiniz</span>
+    </div>
+    <div id="suptDeptTable_tek"></div>
+  </div>
+
+  <!-- ── HSEQ ── -->
+  <div id="p-hseq" class="supt-panel" style="display:none;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <span style="background:#ecdff4;color:#7b3fa0;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">HSEQ</span>
+      <span style="color:var(--muted);font-size:11px;">Hücreye tıklayarak ziyaret ekleyebilirsiniz</span>
+    </div>
+    <div id="suptDeptTable_hseq"></div>
+  </div>
+
+</div>
+
+<!-- ══ GİRİŞ MODALI ══ -->
+<div id="suptModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(6,12,18,0.85);z-index:9000;align-items:center;justify-content:center;backdrop-filter:blur(8px);" onclick="if(event.target===this)suptCloseModal()">
+  <div style="background:#0d1b2a;border:1px solid rgba(0,216,200,0.25);border-radius:12px;padding:28px;width:480px;max-width:95vw;max-height:85vh;overflow-y:auto;box-shadow:0 16px 60px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <h3 id="suptModalTitle" style="font-size:15px;font-weight:700;color:#fff;margin:0;font-family:'Plus Jakarta Sans',sans-serif;"></h3>
+      <button onclick="suptCloseModal()" style="background:rgba(255,90,114,0.1);border:1px solid rgba(255,90,114,0.3);color:#ff5a72;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:12px;">✕ Kapat</button>
+    </div>
+    <div style="margin-bottom:16px;"><span id="suptModalDeptBadge"></span></div>
+    <div id="suptModalList" style="margin-bottom:12px;"></div>
+    <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;">
+      <div style="font-size:12px;font-weight:700;color:var(--teal);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Yeni Ziyaret Ekle</div>
+      <div style="margin-bottom:12px;">
+        <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">Çalışan Adı *</label>
+        <input id="suptInpName" type="text" placeholder="Örn: E.Gür" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;font-size:13px;color:#fff;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px;">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">Gidiş Tarihi *</label>
+          <input id="suptInpStart" type="date" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;font-size:13px;color:#fff;font-family:inherit;outline:none;color-scheme:dark;" oninput="suptUpdateDaysPreview()" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">Dönüş Tarihi *</label>
+          <input id="suptInpEnd" type="date" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;font-size:13px;color:#fff;font-family:inherit;outline:none;color-scheme:dark;" oninput="suptUpdateDaysPreview()" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+        </div>
+      </div>
+      <div id="suptDaysPreview" style="font-size:13px;font-weight:700;color:var(--ok);margin-bottom:12px;min-height:18px;"></div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;">Gemi Durumu</label>
+        <select id="suptInpStatus" style="width:100%;padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:6px;font-size:13px;color:#fff;font-family:inherit;outline:none;" onfocus="this.style.borderColor='var(--teal)'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+          <option value="" style="background:#0d1b2a;">— Durum Seçin —</option>
+          <option value="Seyir" style="background:#0d1b2a;">Seyir</option>
+          <option value="Liman" style="background:#0d1b2a;">Liman</option>
+          <option value="Demir" style="background:#0d1b2a;">Demir</option>
+          <option value="Tersane" style="background:#0d1b2a;">Tersane</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="suptCloseModal()" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--muted);padding:9px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;">İptal</button>
+        <button onclick="suptSaveEntry()" style="background:linear-gradient(135deg,var(--teal),#00a8a0);border:none;color:#000;padding:9px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;">✓ Ekle</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="perfAdminModal">
+  <div class="perf-admin-box">
+    <div class="perf-admin-head">
+      <div>
+        <div class="perf-admin-head-title">🔐 Admin Paneli</div>
+        <div class="perf-admin-head-sub">PERSONEL YÖNETİMİ & PSC KAYIT SİSTEMİ</div>
+      </div>
+      <button class="perf-admin-close" onclick="perfCloseAdminModal()">✕</button>
+    </div>
+
+    <div id="admLockScreen" class="adm-lock">
+      <div style="font-size:2.2rem;opacity:.45;">🔑</div>
+      <div class="adm-lock-title">Admin Şifresi</div>
+      <div class="adm-pin-wrap">
+        <input class="adm-pin-input" id="admPinInput" type="password" placeholder="••••••" maxlength="20"
+          onkeydown="if(event.key==='Enter')admUnlock()">
+        <button class="adm-pin-btn" onclick="admUnlock()">Giriş →</button>
+      </div>
+      <div class="adm-pin-err" id="admPinErr">Hatalı şifre.</div>
+    </div>
+
+    <div id="admContent" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+      <div class="adm-tabs">
+  <button class="adm-tab active" onclick="admTabSwitch('personel',this)">👤 Personel Ekle</button>
+  <button class="adm-tab" onclick="admTabSwitch('duzenle',this)">✏️ Personel Yönetimi</button>
+  <button class="adm-tab" onclick="admTabSwitch('bagimsizPsc',this)">🚢 Bağımsız PSC Ekle</button>
+</div>
+      <div class="perf-admin-body">
+
+        <div id="admTabPersonel" class="adm-tab-panel active">
+          <div class="perf-admin-title">Yeni Personel Ekle</div>
+          <div class="perf-grid2">
+            <div style="position:relative;">
+              <label class="perf-label">Ad Soyad</label>
+              <div style="display:flex;gap:6px;">
+                <input class="perf-input" id="pAdName" placeholder="Ara veya yeni isim yaz..." autocomplete="off"
+                  oninput="pAdNameFilter()" onfocus="pAdNameFilter()" onblur="setTimeout(function(){document.getElementById('pAdNameDrop').style.display='none'},180)">
+                <button type="button" onclick="pAdNameClear()" title="Temizle"
+                  style="background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:0 10px;cursor:pointer;font-size:0.8rem;flex-shrink:0;">✕</button>
+              </div>
+              <div id="pAdNameDrop" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:999;background:#0e2226;border:1px solid rgba(0,216,200,0.25);border-radius:8px;margin-top:4px;max-height:180px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,0.4);"></div>
+            </div>
+            <div>
+              <label class="perf-label">Görev</label>
+              <select class="perf-select" id="pAdRole">
+                <option value="kaptan">Kaptan</option>
+                <option value="carkci">Çarkçıbaşı</option>
+              </select>
+            </div>
+          </div>
+          <div class="perf-grid2">
+            <div><label class="perf-label">Mevcut Gemi</label>
+              <select class="perf-select" id="pAdVessel" onchange="pAdVesselToggle()">
+                <option value="">-- Gemi seçin --</option>
+                <option value="tatilde">🌴 Tatilde / Arşiv</option>
+                <option>APRIL</option><option>ARES</option><option>BEAM</option>
+                <option>CANAL</option><option>COMET</option><option>DALI</option>
+                <option>DODO</option><option>DREAM</option><option>EMINE</option><option></option>FAUN</option>
+                <option>FLAT</option><option>GIFT</option><option>IDON</option>
+                <option>JUST</option><option>KRONOS</option><option>LAKER</option><option>ZEYNEP</option>
+              </select>
+            </div>
+            <div id="pAdStartContainer"><label class="perf-label">Göreve Başlama Tarihi</label><input class="perf-input" id="pAdStart" type="date"></div>
+          </div>
+          <div class="perf-grid2">
+            <div><label class="perf-label">Malzeme İsteme Sıklığı (0–10)</label><input class="perf-input" id="pAdMat" type="number" min="0" max="10"></div>
+            <div></div> 
+          </div>
+          <button class="perf-add-btn" onclick="perfAddPersonel()">+ Personel Ekle</button>
+       <button class="perf-add-btn" onclick="perfAddPersonel()">+ Personel Ekle</button>
+        </div>
+
+        <div id="admTabDuzenle" class="adm-tab-panel">
+          
+          <div id="editPersonListWrapper">
+              <div style="margin-bottom: 1rem; padding: 1rem; background: rgba(0,216,200,0.05); border: 1px solid var(--border); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                  <div>
+                      <strong style="color: var(--teal); font-size: 0.85rem; font-family:'Outfit';">🛡️ Eski Kurt Kalkanı (Avans Sistemi)</strong>
+                      <div style="font-size: 0.65rem; color: var(--muted); margin-top: 4px; font-family: 'DM Mono';">Sistemde yeni ama PSC geçmişi olan kaptanlara 30 göreve ulaşana kadar sanal puan desteği sağlar.</div>
+                  </div>
+                  <button id="btnToggleAvans" onclick="toggleAvansSistemi()" style="padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; font-size: 0.75rem; font-family: 'DM Mono'; transition: all 0.2s;"></button>
+              </div>
+              <p style="font-family:'DM Mono'; font-size:0.7rem; color:var(--muted); margin-bottom:1rem;">Düzenlemek istediğiniz personeli listeden seçin.</p>
+              <div class="edit-person-list" id="editPersonList"></div>
+          </div>
+
+          <div id="editShipSelectionWrapper" style="display:none; margin-top:1rem;">
+              <button onclick="goBackToPersonList()" style="background:rgba(0,216,200,0.05); border:1px solid rgba(0,216,200,0.3); color:var(--teal); padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'DM Mono'; font-size:0.7rem; margin-bottom:1rem; transition:all 0.2s;">
+                🔙 Personel Listesine Dön
+              </button>
+              
+              <h4 id="shipSelectionTitle" style="color:var(--text); font-family:'Outfit'; font-size:1.1rem; margin-bottom:1.5rem; border-bottom:1px solid var(--border); padding-bottom:0.5rem;"></h4>
+              
+              <div class="perf-admin-title">🚢 Güncel Durum / Gemi</div>
+              <div id="currentShipBtn" style="margin-bottom: 2rem;"></div>
+              
+              <div class="perf-admin-title">🕰️ Geçmiş Gemiler (Arşiv Kayıtları)</div>
+              <p style="font-family:'DM Mono'; font-size:0.65rem; color:var(--muted); margin-bottom:0.8rem;">Eski gemi isimlerini, tarihlerini veya dondurulmuş skorları düzenlemek için tıklayın.</p>
+              <div id="pastShipsList"></div>
+          </div>
+
+          <div id="editPersonForm" style="display:none; background: rgba(0,216,200,0.03); border: 1px solid rgba(0,216,200,0.15); padding: 1.2rem; border-radius: 12px; margin-top: 1rem; margin-bottom: 3rem;">
+            <button onclick="goBackToShipSelection()" style="background:transparent; border:1px solid var(--border); color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'DM Mono'; font-size:0.7rem; margin-bottom:1rem;">
+                🔙 Gemi Seçimine Dön
+            </button>
+            <h4 style="font-family:'Outfit',sans-serif; font-size:0.9rem; color:var(--teal); margin-bottom:1rem;">✏️ Güncel Bilgileri Düzenle</h4>
+
+            <div class="perf-grid2">
+              <div><label class="perf-label">Ad Soyad</label><input class="perf-input" id="editName"></div>
+              <div>
+                <label class="perf-label">Görev</label>
+                <select class="perf-select" id="editRole">
+                  <option value="kaptan">Kaptan</option>
+                  <option value="carkci">Çarkçıbaşı</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="perf-grid2">
+              <div><label class="perf-label">Gemi (Değişirse eskisi arşive düşer)</label><input class="perf-input" id="editVessel"></div>
+              <div><label class="perf-label">Göreve Başlama Tarihi</label><input class="perf-input" id="editStart" type="date"></div>
+            </div>
+
+            <div class="perf-grid2">
+              <div>
+                <label class="perf-label">Malzeme İsteme Sıklığı (0-10 Arası Sabit)</label>
+                <input class="perf-input" id="editMat" type="number" min="0" max="10">
+              </div>
+              <div style="display: flex; align-items: flex-end;">
+                <button class="perf-add-btn" onclick="perfSaveEdit()" style="background:linear-gradient(135deg, var(--teal), #00a8a0); color:#000; font-weight:800; border:none; margin:0;">
+                  💾 Bilgileri Güncelle
+                </button>
+              </div>
+            </div>
+            
+            <input type="hidden" id="editBuildYear">
+            <div class="perf-section-sep"></div>
+
+            <div class="perf-admin-title">PSC İnspeksiyon Geçmişi</div>
+            <div id="editPscList" style="margin-bottom: 1rem;"></div>
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(0,216,200,0.1); padding: 1rem; border-radius: 8px;">
+                <h4 style="font-family:'Outfit',sans-serif; font-size:0.8rem; color:var(--teal); margin-bottom:0.8rem;">Yeni PSC Ekle</h4>
+                <div class="perf-grid3">
+                  <div><label class="perf-label">Gemi</label>
+                    <select class="perf-select" id="pPscVessel">
+                      <option value="">-- Gemi seçin --</option>
+                      <option>APRIL</option><option>ARES</option><option>BEAM</option>
+                      <option>CANAL</option><option>COMET</option><option>DALI</option>
+                      <option>DODO</option><option>DREAM</option><option>EMINE</option><option>FAUN</option>
+                      <option>FLAT</option><option>GIFT</option><option>IDON</option>
+                      <option>JUST</option><option>KRONOS</option><option>LAKER</option><option>ZEYNEP</option>
+                    </select>
+                  </div>
+                  <div><label class="perf-label">İnspeksiyon Tarihi</label><input class="perf-input" id="pPscDate" type="date"></div>
+                  <div><label class="perf-label">Liman</label><input class="perf-input" id="pPscPort" placeholder="Rotterdam..."></div>
+                </div>
+                <div class="perf-grid2" style="margin-bottom:.7rem;">
+                  <div style="grid-column: span 2;"><label class="perf-label">Ülke</label>
+                    <select class="perf-select" id="pPscCountry">
+                        <option value="">-- Ülke seçin --</option>
+                        <optgroup label="Tier 1 — Katsayı 1.50">
+                          <option>Australia</option><option>United States</option><option>United Kingdom</option>
+                          <option>Netherlands</option><option>France</option><option>Germany</option>
+                          <option>Norway</option><option>Sweden</option><option>Denmark</option>
+                          <option>Finland</option><option>Japan</option><option>Canada</option><option>New Zealand</option>
+                        </optgroup>
+                        <optgroup label="Tier 2 — Katsayı 1.35">
+                          <option>Belgium</option><option>Spain</option><option>Italy</option>
+                          <option>Portugal</option><option>Greece</option><option>Ireland</option>
+                          <option>Iceland</option><option>Poland</option><option>Estonia</option>
+                          <option>Latvia</option><option>Lithuania</option><option>Slovenia</option>
+                          <option>Croatia</option><option>Malta</option><option>Cyprus</option>
+                          <option>South Korea</option><option>Singapore</option><option>Hong Kong</option>
+                          <option>China</option><option>Chile</option><option>South Africa</option>
+                        </optgroup>
+                        <optgroup label="Tier 3 — Katsayı 1.00">
+                          <option>Indonesia</option><option>Malaysia</option><option>Philippines</option>
+                          <option>Thailand</option><option>Vietnam</option><option>Russia</option>
+                          <option>Panama</option><option>Mexico</option><option>Peru</option>
+                          <option>Argentina</option><option>Brazil</option><option>Colombia</option>
+                          <option>Uruguay</option><option>Ecuador</option><option>India</option>
+                          <option>Sri Lanka</option><option>Bangladesh</option><option>Pakistan</option>
+                          <option>Oman</option><option>Iran</option><option>Mozambique</option>
+                          <option>Tanzania</option><option>Kenya</option><option>Madagascar</option>
+                          <option>Mauritius</option><option>Maldives</option><option>Seychelles</option>
+                          <option>Turkey</option><option>Bulgaria</option><option>Romania</option>
+                          <option>Georgia</option><option>Ukraine</option><option>Azerbaijan</option>
+                          <option>Morocco</option><option>Algeria</option><option>Tunisia</option>
+                          <option>Libya</option><option>Egypt</option><option>Israel</option>
+                          <option>Lebanon</option><option>Syria</option><option>Albania</option>
+                          <option>Saudi Arabia</option><option>UAE</option><option>Qatar</option>
+                          <option>Kuwait</option><option>Bahrain</option><option>Iraq</option>
+                          <option>Jordan</option><option>Yemen</option>
+                        </optgroup>
+                        <optgroup label="Tier 4 — Katsayı 0.70">
+                          <option>Jamaica</option><option>Trinidad and Tobago</option><option>Barbados</option>
+                          <option>Cuba</option><option>Dominican Republic</option><option>Haiti</option>
+                          <option>Belize</option><option>Suriname</option><option>Ghana</option>
+                          <option>Nigeria</option><option>Cameroon</option><option>Senegal</option>
+                          <option>Ivory Coast</option><option>Togo</option><option>Benin</option>
+                          <option>Congo</option><option>Angola</option><option>Gabon</option>
+                          <option>Equatorial Guinea</option>
+                        </optgroup>
+                        <optgroup label="Tier 5 — Katsayı 0.40">
+                          <option>Liberia</option><option>Sierra Leone</option><option>Guinea</option>
+                          <option>Gambia</option><option>Mauritania</option><option>Somalia</option>
+                          <option>Eritrea</option><option>Djibouti</option><option>Myanmar</option>
+                          <option>North Korea</option><option>Venezuela</option><option>Honduras</option>
+                          <option>Guatemala</option><option>Nicaragua</option>
+                        </optgroup>
+                    </select>
+                  </div>
+                </div>
+                <div style="margin-bottom:0.8rem; display:flex; align-items:center; gap:10px; background: rgba(232,184,75,0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(232,184,75,0.3);">
+                  <input type="checkbox" id="bPscManualCheck" onchange="document.getElementById('bPscManualScore').disabled = !this.checked" style="width:16px; height:16px; cursor:pointer;">
+                  <label for="bPscManualCheck" class="perf-label" style="margin-bottom:0; cursor:pointer; color:var(--warn);">Manuel Puan Girilsin mi?</label>
+                  <input type="number" step="0.1" id="bPscManualScore" class="perf-input" style="width:100px; padding:4px 8px;" disabled placeholder="Örn: 5">
+              </div>
+
+                <div style="margin-bottom:.8rem;">
+                  <label class="perf-label">Sonuç</label>
+                  <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+                    <button type="button" class="psc-result-btn" id="pscBtnClear" onclick="pscSelectResult('clear')">✅ Clear Geçiş</button>
+                    <button type="button" class="psc-result-btn" id="pscBtnRemark" onclick="pscSelectResult('remark')">⚠️ Remark</button>
+                    <button type="button" class="psc-result-btn" id="pscBtnDetained" onclick="pscSelectResult('detained')">🚫 Detention</button>
+                  </div>
+                </div>
+
+                <div id="pscDetailSection" style="display:none;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+                    <label class="perf-label" style="margin-bottom:0;">Remark Listesi <span class="remark-count-badge" id="remarkCountBadge">0 remark</span></label>
+                    <button class="remark-add-btn" onclick="addRemarkRow()" id="addRemarkBtn">+ Remark Ekle</button>
+                  </div>
+                  <div class="remark-list" id="remarkList"></div>
+                </div>
+                <button class="perf-add-btn" onclick="perfAddPSC()" style="margin-top:.8rem;">+ PSC Kaydı Ekle</button>
+            </div>
+            
+            <div class="perf-section-sep"></div>
+            <div class="perf-admin-title">Rightship İnspeksiyon Geçmişi</div>
+            <div id="editRightshipList" style="margin-bottom: 1rem;"></div>
+            
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(0,216,200,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <h4 style="font-family:'Outfit',sans-serif; font-size:0.8rem; color:#4285f4; margin-bottom:0.8rem;">Yeni Rightship Ekle</h4>
+                <div class="perf-grid3">
+                  <div><label class="perf-label">Gemi</label>
+                    <select class="perf-select" id="pRsVessel">
+                      <option value="">-- Gemi --</option>
+                      <option>APRIL</option><option>ARES</option><option>BEAM</option><option>CANAL</option><option>COMET</option><option>DALI</option><option>DODO</option><option>DREAM</option><option>EMINE</option><option>FAUN</option><option>FLAT</option><option>GIFT</option><option>IDON</option><option>JUST</option><option>KRONOS</option><option>LAKER</option><option>ZEYNEP</option>
+                    </select>
+                  </div>
+                  <div><label class="perf-label">Tarih</label><input class="perf-input" id="pRsDate" type="date"></div>
+                  <div><label class="perf-label">Liman</label><input class="perf-input" id="pRsPort" placeholder="Liman..."></div>
+                </div>
+                <div class="perf-grid2" style="margin-bottom:.7rem;">
+                  <div style="grid-column: span 2;"><label class="perf-label">Ülke</label>
+                     <input class="perf-input" id="pRsCountry" placeholder="Ülke ismi...">
+                  </div>
+                </div>
+                
+                <div style="margin-bottom:.8rem;">
+                  <label class="perf-label">Sonuç</label>
+                  <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+                    <button type="button" class="psc-result-btn" id="rsBtnClear" onclick="rsSelectResult('clear')">✅ Clear Geçiş</button>
+                    <button type="button" class="psc-result-btn" id="rsBtnRemark" onclick="rsSelectResult('remark')">⚠️ Remark</button>
+                  </div>
+                </div>
+
+                <div id="rsDetailSection" style="display:none; margin-bottom:.8rem;">
+                  <h4 style="font-family:'DM Mono',monospace; font-size:0.65rem; color:var(--muted); margin-bottom:0.5rem; text-transform:uppercase;">Bulgular (Findings)</h4>
+                  <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:.5rem;">
+                     <div><label class="perf-label" style="color:var(--text)">Total</label><input class="perf-input" id="pRsTotal" type="number" min="0" value="0"></div>
+                     <div><label class="perf-label" style="color:var(--bad)">High Risk</label><input class="perf-input" id="pRsHigh" type="number" min="0" value="0"></div>
+                     <div><label class="perf-label" style="color:var(--warn)">Med Risk</label><input class="perf-input" id="pRsMed" type="number" min="0" value="0"></div>
+                     <div><label class="perf-label" style="color:var(--teal)">Low Risk</label><input class="perf-input" id="pRsLow" type="number" min="0" value="0"></div>
+                  </div>
+                </div>
+
+                <button class="perf-add-btn" onclick="perfAddRightship()">+ Rightship Kaydı Ekle</button>
+            </div>
+            <div class="perf-section-sep"></div>
+
+            <div class="perf-section-sep"></div>
+            <div class="perf-admin-title">Şirket Hizmet Geçmişi</div>
+            <div id="editServiceHistoryList" style="margin-bottom: 1rem;"></div>
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(0,216,200,0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <h4 style="font-family:'Outfit',sans-serif; font-size:0.8rem; color:var(--teal); margin-bottom:0.8rem;">Yeni Hizmet Kaydı Ekle</h4>
+                <div class="perf-grid3">
+                    <div>
+                        <label class="perf-label">Gemi</label>
+                        <select class="perf-select" id="newServiceVessel">
+                            <option value="">-- Gemi seçin --</option>
+                            <option>APRIL</option><option>ARES</option><option>BEAM</option>
+                            <option>CANAL</option><option>COMET</option><option>DALI</option>
+                            <option>DODO</option><option>DREAM</option><option>EMINE</option>
+                            <option>FAUN</option><option>FLAT</option><option>GIFT</option>
+                            <option>IDON</option><option>JUST</option><option>KRONOS</option>
+                            <option>LAKER</option><option>ZEYNEP</option>
+                        </select>
+                    </div>
+                    <div><label class="perf-label">Başlama Tarihi</label><input class="perf-input" id="newServiceStart" type="date" oninput="calcServiceMonths()"></div>
+                    <div><label class="perf-label">Bitiş Tarihi</label><input class="perf-input" id="newServiceEnd" type="date" oninput="calcServiceMonths()"></div>
+                </div>
+                <div id="newServiceMonthsPreview" style="font-family:'DM Mono';font-size:0.72rem;color:var(--warn);margin:0.4rem 0 0.6rem 0;min-height:1.2rem;"></div>
+                <button class="perf-add-btn" onclick="addServiceHistory()" style="margin-top:.5rem;">+ Hizmet Kaydı Ekle</button>
+            </div>
+            <div class="perf-grid2">
+              <div><label class="perf-label">Ayrılış Tarihi</label><input class="perf-input" id="editDepartDate" type="date"></div>
+            </div>
+            <button class="perf-add-btn" style="background:linear-gradient(135deg,rgba(255,90,114,.09),rgba(255,90,114,.04));border-color:rgba(255,90,114,.32);color:var(--bad);" onclick="perfDepartPersonel()">
+              ⚠ Ayrılışı Kaydet ve Arşivle
+            </button>
+          </div> <div id="editPastShipForm" style="display:none; background: rgba(232,184,75,0.04); border: 1px solid rgba(232,184,75,0.2); padding: 1.2rem; border-radius: 12px; margin-top: 1rem; margin-bottom: 3rem;">
+            <button onclick="goBackToShipSelection()" style="background:transparent; border:1px solid var(--border); color:var(--muted); padding:6px 12px; border-radius:6px; cursor:pointer; font-family:'DM Mono'; font-size:0.7rem; margin-bottom:1rem;">
+                🔙 Gemi Seçimine Dön
+            </button>
+            <h4 style="font-family:'Outfit',sans-serif; font-size:0.9rem; color:var(--warn); margin-bottom:1rem;">🕰️ Geçmiş Gemi Kaydını Düzenle</h4>
+            
+            <div class="perf-grid2">
+              <div><label class="perf-label">Gemi Adı</label><input class="perf-input" id="editPastVessel"></div>
+              <div><label class="perf-label">Dondurulmuş Skor</label><input class="perf-input" id="editPastScore" type="number" step="0.1"></div>
+            </div>
+            <div class="perf-grid2">
+              <div><label class="perf-label">Başlama Tarihi</label><input class="perf-input" id="editPastStart"></div>
+              <div><label class="perf-label">Bitiş Tarihi</label><input class="perf-input" id="editPastEnd"></div>
+            </div>
+
+            <button class="perf-add-btn" onclick="perfSavePastShip()" style="background:linear-gradient(135deg, var(--warn), #a06800); color:#000; font-weight:800; border:none; margin-top: 1rem;">
+              💾 Geçmiş Kaydı Güncelle
+            </button>
+            <button class="perf-add-btn" onclick="perfDeletePastShip()" style="background:transparent; border:1px solid var(--bad); color:var(--bad); margin-top: 0.8rem;">
+              🗑️ Bu Kaydı Arşivden Sil
+            </button>
+          </div> </div> <div id="admTabBagimsizPsc" class="adm-tab-panel" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+          <div class="perf-admin-title">Kaptandan Bağımsız PSC Kaydı Ekle</div>
+          <p style="font-size:0.75rem; color:var(--muted); margin-bottom:1.5rem; font-family: 'Plus Jakarta Sans', sans-serif;">
+            Sistemde artık aktif olmayan veya geçmişteki personellere ait PSC kayıtlarını şirket istatistik veritabanında tutmak için buradan ekleyebilirsiniz. Bu kayıtlar kaptanların bireysel puanlarını etkilemez.
+          </p>
+          <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(0,216,200,0.1); padding: 1rem; border-radius: 8px;">
+            <div class="perf-grid3">
+              <div>
+                <label class="perf-label">Gemi</label>
+                <select class="perf-select" id="bPscVessel" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                  <option value="">-- Gemi seçin --</option>
+                  <option>APRIL</option><option>ARES</option><option>BEAM</option>
+                  <option>CANAL</option><option>COMET</option><option>DALI</option>
+                  <option>DODO</option><option>DREAM</option><option>EMINE</option><option>FAUN</option>
+                  <option>FLAT</option><option>GIFT</option><option>IDON</option>
+                  <option>JUST</option><option>KRONOS</option><option>LAKER</option><option>ZEYNEP</option>
+                </select>
+              </div>
+              <div>
+                <label class="perf-label">İnspeksiyon Tarihi</label>
+                <input class="perf-input" id="bPscDate" type="date" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+              </div>
+              <div>
+                <label class="perf-label">Liman</label>
+                <input class="perf-input" id="bPscPort" placeholder="Örn: Rotterdam..." style="font-family: 'Plus Jakarta Sans', sans-serif;">
+              </div>
+            </div>
+            
+            <div class="perf-grid2" style="margin-bottom:.7rem;">
+              <div style="grid-column: span 2;">
+                <label class="perf-label">Ülke</label>
+                <select class="perf-select" id="bPscCountry" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                   <option value="">-- Ülke seçin --</option>
+                   <optgroup label="Tier 1 — Katsayı 1.50">
+                     <option>Australia</option><option>United States</option><option>United Kingdom</option>
+                     <option>Netherlands</option><option>France</option><option>Germany</option>
+                     <option>Norway</option><option>Sweden</option><option>Denmark</option>
+                     <option>Finland</option><option>Japan</option><option>Canada</option><option>New Zealand</option>
+                   </optgroup>
+                   <optgroup label="Tier 2 — Katsayı 1.35">
+                     <option>Belgium</option><option>Spain</option><option>Italy</option>
+                     <option>Portugal</option><option>Greece</option><option>Ireland</option>
+                     <option>Iceland</option><option>Poland</option><option>Estonia</option>
+                     <option>Latvia</option><option>Lithuania</option><option>Slovenia</option>
+                     <option>Croatia</option><option>Malta</option><option>Cyprus</option>
+                     <option>South Korea</option><option>Singapore</option><option>Hong Kong</option>
+                     <option>China</option><option>Chile</option><option>South Africa</option>
+                   </optgroup>
+                   <optgroup label="Tier 3 — Katsayı 1.00">
+                     <option>Indonesia</option><option>Malaysia</option><option>Philippines</option>
+                     <option>Thailand</option><option>Vietnam</option><option>Russia</option>
+                     <option>Panama</option><option>Mexico</option><option>Peru</option>
+                     <option>Argentina</option><option>Brazil</option><option>Colombia</option>
+                     <option>Uruguay</option><option>Ecuador</option><option>India</option>
+                     <option>Sri Lanka</option><option>Bangladesh</option><option>Pakistan</option>
+                     <option>Oman</option><option>Iran</option><option>Mozambique</option>
+                     <option>Tanzania</option><option>Kenya</option><option>Madagascar</option>
+                     <option>Mauritius</option><option>Maldives</option><option>Seychelles</option>
+                     <option>Turkey</option><option>Bulgaria</option><option>Romania</option>
+                     <option>Georgia</option><option>Ukraine</option><option>Azerbaijan</option>
+                     <option>Morocco</option><option>Algeria</option><option>Tunisia</option>
+                     <option>Libya</option><option>Egypt</option><option>Israel</option>
+                     <option>Lebanon</option><option>Syria</option><option>Albania</option>
+                     <option>Saudi Arabia</option><option>UAE</option><option>Qatar</option>
+                     <option>Kuwait</option><option>Bahrain</option><option>Iraq</option>
+                     <option>Jordan</option><option>Yemen</option>
+                   </optgroup>
+                   <optgroup label="Tier 4 — Katsayı 0.70">
+                     <option>Jamaica</option><option>Trinidad and Tobago</option><option>Barbados</option>
+                     <option>Cuba</option><option>Dominican Republic</option><option>Haiti</option>
+                     <option>Belize</option><option>Suriname</option><option>Ghana</option>
+                     <option>Nigeria</option><option>Cameroon</option><option>Senegal</option>
+                     <option>Ivory Coast</option><option>Togo</option><option>Benin</option>
+                     <option>Congo</option><option>Angola</option><option>Gabon</option>
+                     <option>Equatorial Guinea</option>
+                   </optgroup>
+                   <optgroup label="Tier 5 — Katsayı 0.40">
+                     <option>Liberia</option><option>Sierra Leone</option><option>Guinea</option>
+                     <option>Gambia</option><option>Mauritania</option><option>Somalia</option>
+                     <option>Eritrea</option><option>Djibouti</option><option>Myanmar</option>
+                     <option>North Korea</option><option>Venezuela</option><option>Honduras</option>
+                     <option>Guatemala</option><option>Nicaragua</option>
+                   </optgroup>
+                </select>
+              </div>
+            </div>
+            <div style="margin-bottom:0.8rem; display:flex; align-items:center; gap:10px; background: rgba(232,184,75,0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(232,184,75,0.3);">
+              <input type="checkbox" id="pPscManualCheck" onchange="document.getElementById('pPscManualScore').disabled = !this.checked" style="width:16px; height:16px; cursor:pointer;">
+              <label for="pPscManualCheck" class="perf-label" style="margin-bottom:0; cursor:pointer; color:var(--warn);">Manuel Puan Girilsin mi?</label>
+              <input type="number" step="0.1" id="pPscManualScore" class="perf-input" style="width:100px; padding:4px 8px;" disabled placeholder="Örn: 5">
+          </div>
+            <div style="margin-bottom:.8rem;">
+              <label class="perf-label">Sonuç</label>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+                <button type="button" class="psc-result-btn" id="bPscBtnClear" onclick="bSelectResult('clear')">✅ Clear Geçiş</button>
+                <button type="button" class="psc-result-btn" id="bPscBtnRemark" onclick="bSelectResult('remark')">⚠️ Remark</button>
+                <button type="button" class="psc-result-btn" id="bPscBtnDetained" onclick="bSelectResult('detained')">🚫 Detention</button>
+              </div>
+            </div>
+<!-- MANUEL PUAN GİRİŞİ (BAĞIMSIZ PSC) -->
+<div style="margin-bottom:0.8rem; background:rgba(212,160,48,0.05); border:1px dashed rgba(212,160,48,0.4); padding:10px; border-radius:8px;">
+  <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--gold); font-family:'Outfit'; font-size:0.8rem;">
+    <input type="checkbox" id="bPsc_ManualToggle" onchange="toggleManualScore('bPsc')">
+    Puanı Manuel Belirle (Algoritmayı Devre Dışı Bırak)
+  </label>
+  <div id="bPsc_ManualInputDiv" style="display:none; margin-top:8px;">
+    <label class="perf-label">Kayıt Puanı (Örn: -15 veya +5)</label>
+    <input type="number" step="0.1" class="perf-input" id="bPsc_ManualScore" placeholder="Örn: -12.5">
+  </div>
+</div>
+            <div id="bPscDetailSection" style="display:none;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem;">
+                <label class="perf-label" style="margin-bottom:0;">Remark Listesi <span class="remark-count-badge" id="bRemarkCountBadge">0 remark</span></label>
+                <button class="remark-add-btn" onclick="bAddRemarkRow()" id="bAddRemarkBtn">+ Remark Ekle</button>
+              </div>
+              <div class="remark-list" id="bRemarkList"></div>
+            </div>
+
+            <button class="perf-add-btn" onclick="saveBagimsizPsc()" style="margin-top:1.5rem; background:linear-gradient(135deg, var(--teal), #00a8a0); color:#000; font-family: 'Plus Jakarta Sans', sans-serif; font-weight:800; border:none;">💾 Şirket Arşivine Kaydet</button>
+          </div>
+        </div> </div> </div> </div> </div> <div id="perfDetailOverlay">
+  <div class="perf-detail-box">
+    <div class="perf-detail-head">
+      <div>
+        <div class="perf-detail-name" id="pdName">—</div>
+        <div class="perf-detail-role" id="pdRole">—</div>
+      </div>
+      <button class="perf-detail-close" onclick="perfCloseDetail()">✕</button>
+    </div>
+    <div class="perf-detail-body">
+      <div class="perf-detail-section">
+        <div class="perf-detail-sec-title">Mevcut Gemi & Görev Süresi</div>
+        <div class="perf-current-vessel" id="pdCurrentVessel"></div>
+      </div>
+      <div class="perf-detail-section">
+        <div class="perf-detail-sec-title">Skor Kırılımı</div>
+        <div class="perf-score-breakdown" id="pdScoreBreakdown"></div>
+        <div class="perf-total-score-row">
+          <span>TOPLAM SKOR</span><span id="pdTotalScore">—</span>
+        </div>
+      </div>
+      <div class="perf-detail-section">
+        <div class="perf-detail-sec-title">Detaylı Kayıtlar ve Geçmiş</div>
+        <div id="pdVesselHistory"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div id="countryDetailOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,12,18,0.92);backdrop-filter:blur(16px);align-items:center;justify-content:center;">
+  <div style="background:rgba(10,22,26,0.99);border:1px solid rgba(0,216,200,0.3);border-radius:20px;width:92%;max-width:900px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 80px rgba(0,0,0,0.6);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;border-bottom:1px solid rgba(0,216,200,0.1);">
+      <div>
+        <h3 id="countryDetailTitle" style="color:#fff;font-family:'Plus Jakarta Sans', sans-serif;font-size:1.2rem;margin:0;display:flex;align-items:center;">Ülke Detayları</h3>
+        <p style="color:var(--muted);font-size:0.75rem;font-family:'Plus Jakarta Sans', sans-serif;margin-top:4px;">En çok remark yenen denetimden en aza doğru sıralanmıştır.</p>
+      </div>
+      <button onclick="document.getElementById('countryDetailOverlay').style.display='none'" style="background:rgba(255,90,114,0.1);border:1px solid rgba(255,90,114,0.3);color:var(--bad);padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Plus Jakarta Sans', sans-serif;font-weight:700;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,90,114,0.2)'" onmouseout="this.style.background='rgba(255,90,114,0.1)'">Gizle ✕</button>
+    </div>
+    <div id="countryDetailList" style="padding:1.5rem;overflow-y:auto;flex:1;">
+      </div>
+  </div>
+</div>
+<div id="mouDetailOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,12,18,0.92);backdrop-filter:blur(16px);align-items:center;justify-content:center;">
+  <div style="background:rgba(10,22,26,0.99);border:1px solid rgba(0,216,200,0.3);border-radius:20px;width:92%;max-width:900px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 80px rgba(0,0,0,0.6);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;border-bottom:1px solid rgba(0,216,200,0.1);">
+      <div>
+        <h3 id="mouDetailTitle" style="color:#fff;font-family:'Plus Jakarta Sans', sans-serif;font-size:1.2rem;margin:0;display:flex;align-items:center;">MoU Detayları</h3>
+        <p style="color:var(--muted);font-size:0.75rem;font-family:'Plus Jakarta Sans', sans-serif;margin-top:4px;">En çok remark yenen denetimden en aza doğru sıralanmıştır.</p>
+      </div>
+      <button onclick="document.getElementById('mouDetailOverlay').style.display='none'" style="background:rgba(255,90,114,0.1);border:1px solid rgba(255,90,114,0.3);color:var(--bad);padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Plus Jakarta Sans', sans-serif;font-weight:700;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,90,114,0.2)'" onmouseout="this.style.background='rgba(255,90,114,0.1)'">Gizle ✕</button>
+    </div>
+    <div id="mouDetailList" style="padding:1.5rem;overflow-y:auto;flex:1;">
+      </div>
+  </div>
+</div>
+<div id="aiCategoryOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(6,12,18,0.95);backdrop-filter:blur(20px);align-items:center;justify-content:center;">
+  <div style="background:rgba(10,22,26,0.99);border:1px solid rgba(66,133,244,0.4);border-radius:20px;width:92%;max-width:800px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(66,133,244,0.15);">
+    
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;border-bottom:1px solid rgba(66,133,244,0.15); background:linear-gradient(90deg, rgba(66,133,244,0.05), transparent);">
+      <div>
+        <h3 style="color:#4285f4;font-family:'Plus Jakarta Sans', sans-serif;font-size:1.1rem;margin:0;display:flex;align-items:center;gap:8px;">
+          ✨ AI Asistanı Devrede
+        </h3>
+        <p style="color:var(--muted);font-size:0.7rem;font-family:'DM Mono';margin-top:4px;">Girilen remarklar analiz edildi. Lütfen kategorileri onaylayın veya düzenleyin.</p>
+      </div>
+      <button onclick="document.getElementById('aiCategoryOverlay').style.display='none'" style="background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+    </div>
+
+    <div id="aiLoadingState" style="padding:4rem 2rem; text-align:center;">
+        <div class="pdf-overlay-spinner" style="border-top-color:#4285f4; margin:0 auto 1rem auto;"></div>
+        <div style="color:#4285f4; font-family:'DM Mono'; font-size:0.85rem; letter-spacing:0.1em; animation:pulse 1.5s infinite;">GEMINI ANALİZ EDİYOR...</div>
+    </div>
+
+    <div id="aiReviewState" style="display:none; flex:1; overflow-y:auto; padding:1.5rem;">
+      <table style="width:100%;border-collapse:collapse;font-family:'DM Mono';font-size:0.75rem;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:var(--muted); text-align:left;">
+            <th style="padding:8px; width:60%;">Remark Metni</th>
+            <th style="padding:8px; width:40%;">AI Önerisi (IMO Category)</th>
+          </tr>
+        </thead>
+        <tbody id="aiReviewTableBody"></tbody>
+      </table>
+    </div>
+
+    <div id="aiReviewFooter" style="display:none; padding:1.2rem 1.5rem; border-top:1px solid rgba(255,255,255,0.05); text-align:right;">
+      <button id="btnAiConfirm" style="background:linear-gradient(135deg, #4285f4, #1ba1e2); border:none; color:#fff; padding:0.6rem 1.5rem; border-radius:8px; font-family:'Plus Jakarta Sans'; font-weight:700; cursor:pointer; font-size:0.85rem; box-shadow:0 4px 15px rgba(66,133,244,0.3);">
+        ✓ Onayla ve Veritabanına Kaydet
+      </button>
+    </div>
+
+  </div>
+</div>
+<div id="historyModalOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,12,18,0.92);backdrop-filter:blur(16px);align-items:center;justify-content:center;">
+  <div style="background:rgba(10,22,26,0.99);border:1px solid rgba(212,160,48,0.3);border-radius:20px;width:90%;max-width:800px;padding:1.5rem;box-shadow:0 20px 80px rgba(0,0,0,0.6);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+      <div>
+        <h3 style="color:var(--gold);font-family:'Outfit';margin:0;">📈 Filo Final Ortalaması Geçmişi</h3>
+        <p style="color:var(--muted);font-size:0.75rem;font-family:'DM Mono';margin-top:4px;">Cuma günleri otomatik alınan kayıtlar</p>
+      </div>
+      <button onclick="document.getElementById('historyModalOverlay').style.display='none';" style="background:rgba(255,90,114,0.1);border:1px solid rgba(255,90,114,0.3);color:var(--bad);padding:5px 12px;border-radius:8px;cursor:pointer;">Kapat</button>
+    </div>
+    <div style="height:350px;width:100%;">
+      <canvas id="historyChartCanvas"></canvas>
+    </div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/main.js"></script>
+<script src="js/superintendent.js"></script>
+<!-- KATEGORİ DETAY MODALI -->
+<div id="categoryDetailOverlay" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(6,12,18,0.92);backdrop-filter:blur(16px);align-items:center;justify-content:center;">
+  <div style="background:rgba(10,22,26,0.99);border:1px solid rgba(66,133,244,0.3);border-radius:20px;width:92%;max-width:900px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 80px rgba(0,0,0,0.6);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;border-bottom:1px solid rgba(66,133,244,0.1);">
+      <div>
+        <h3 id="categoryDetailTitle" style="color:#fff;font-family:'Plus Jakarta Sans', sans-serif;font-size:1.2rem;margin:0;display:flex;align-items:center;">Kategori Detayları</h3>
+        <p style="color:var(--muted);font-size:0.75rem;font-family:'Plus Jakarta Sans', sans-serif;margin-top:4px;">Bu kategoriye ait tüm gemi ve limanlardaki remarklar.</p>
+      </div>
+      <button onclick="document.getElementById('categoryDetailOverlay').style.display='none'" style="background:rgba(255,90,114,0.1);border:1px solid rgba(255,90,114,0.3);color:var(--bad);padding:6px 12px;border-radius:8px;cursor:pointer;font-family:'Plus Jakarta Sans', sans-serif;font-weight:700;transition:all 0.2s;">Gizle ✕</button>
+    </div>
+    <div id="categoryDetailList" style="padding:1.5rem;overflow-y:auto;flex:1;">
+    </div>
+  </div>
+</div>
+<!-- KATEGORİ DÜZENLEME ADMIN MODALI -->
+<div id="remarkCatAdminOverlay" style="display:none;position:fixed;inset:0;z-index:999999;background:rgba(6,12,18,0.95);backdrop-filter:blur(20px);align-items:center;justify-content:center;">
+  <div style="background:rgba(10,22,26,0.99);border:1px solid rgba(0,216,200,0.3);border-radius:20px;width:95%;max-width:1000px;height:85vh;display:flex;flex-direction:column;box-shadow:0 20px 80px rgba(0,0,0,0.8);">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:1.2rem 1.5rem;border-bottom:1px solid rgba(0,216,200,0.1);">
+      <div>
+        <h3 style="color:#fff;font-family:'Plus Jakarta Sans', sans-serif;font-size:1.2rem;margin:0;">Tüm Remark Kategorilerini Yönet</h3>
+        <p style="color:var(--muted);font-size:0.75rem;font-family:'Plus Jakarta Sans', sans-serif;margin-top:4px;">Veritabanındaki tüm remarklar ve atandıkları IMO kategorileri.</p>
+      </div>
+      <button onclick="document.getElementById('remarkCatAdminOverlay').style.display='none'" style="background:transparent;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;transition:color 0.2s;" onmouseover="this.style.color='#ff5a72'" onmouseout="this.style.color='var(--muted)'">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:0;">
+      <table style="width:100%;border-collapse:collapse;font-family:'Plus Jakarta Sans', sans-serif;font-size:0.8rem;">
+        <thead style="position:sticky; top:0; background:rgba(10,22,26,0.98); z-index:1; box-shadow:0 2px 10px rgba(0,0,0,0.5);">
+          <tr style="color:var(--muted); text-align:left; border-bottom:1px solid rgba(255,255,255,0.1);">
+            <th style="padding:15px; width:20%;">Gemi / Tarih</th>
+            <th style="padding:15px; width:45%;">Remark Metni</th>
+            <th style="padding:15px; width:35%;">Kategori Seçimi</th>
+          </tr>
+        </thead>
+        <tbody id="remarkCatAdminTbody"></tbody>
+      </table>
+    </div>
+    <div style="padding:1.2rem 1.5rem;border-top:1px solid rgba(0,216,200,0.1);text-align:right;">
+      <button onclick="saveRemarkCategories()" style="background:linear-gradient(135deg, var(--teal), #00a8a0);border:none;color:#000;padding:0.6rem 1.5rem;border-radius:8px;font-family:'Plus Jakarta Sans', sans-serif;font-weight:800;cursor:pointer;font-size:0.85rem;">Değişiklikleri Kaydet</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
