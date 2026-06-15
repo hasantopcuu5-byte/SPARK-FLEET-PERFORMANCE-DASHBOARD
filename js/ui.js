@@ -109,9 +109,6 @@ function animate(ts) {
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
-// ══════════════════════
-//  NAV
-// ══════════════════════
 // ══════════════════════════════════════════════════════
 //  NAV — GÜNCELLENMİŞ (superintendent eklendi)
 // ══════════════════════════════════════════════════════
